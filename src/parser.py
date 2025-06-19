@@ -1,6 +1,6 @@
 from typing import Iterator, Optional
 from lark import Lark, Tree, v_args
-from lark.visitors import Interpreter, visit_children_decor
+from lark.visitors import Interpreter
 from sim_objects import SimObject
 from tqdm import tqdm
 import os

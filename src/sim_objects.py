@@ -36,7 +36,7 @@ class SimObject(ABC):
             raise TypeError("Connected objects must be a list.")
         deque(map(lambda x: self.connect(x), connected_objects or list()))
 
-    def get_param(self, index: int) -> Optional[Union[str, int, float]]:
+    def get_param(self, index: int) -> Optional[str | int | float]:
         """
         Get a parameter by its index.
 
