@@ -2,6 +2,101 @@
 
 This project demonstrates a querying system based on the language of first-order predicate logic to find items in a simulation dataset (SimObjects) that have certain properties.
 
+## Installation
+
+This project uses `uv` for dependency management and installation. Follow the steps below to set up your environment:
+
+### 1. Install uv
+If you haven't already, install uv (requires Python 3.8+):
+
+```bash
+curl -Ls https://astral.sh/uv/install.sh | sh
+```
+
+Or, on macOS with Homebrew:
+
+```bash
+brew install astral-sh/tap/uv
+```
+
+### 2. Clone the Repository
+```bash
+git clone https://github.com/Fdpr/predicate-query.git
+cd predicate-query
+```
+### 4. Install Dependencies
+Install all dependencies as specified in the lockfile:
+
+```bash
+uv pip install -r uv.lock
+```
+
+## Usage
+
+run `uv run src/main.py -h` for help.
+
+```
+usage: main.py [-h] {query,interactive,generate} ...
+
+CLI for querying a SimObject dataset using PL1 logic.
+
+positional arguments:
+  {query,interactive,generate}
+    query               Query a dataset with a formula and save the results to disk.
+    interactive         Enter an interactive mode to query a dataset.
+    generate            Generate a random dataset and save it to disk.
+
+options:
+  -h, --help            show this help message and exit
+```
+
+### Query mode
+
+In query mode, you can either provide a single query or a batch of queries in an input file. The results are written to the output file as JSON.
+
+```
+usage: main.py query [-h] -f FILE -o OUTPUT (-q QUERY | -i INPUT)
+
+options:
+  -h, --help            show this help message and exit
+  -f FILE, --file FILE  Path to the dataset file.
+  -o OUTPUT, --output OUTPUT
+                        Path to save the results of the query, in JSON format.
+  -q QUERY, --query QUERY
+                        The PL1 to query the dataset with.
+  -i INPUT, --input INPUT
+                        Path to a file containing a PL1 query on each line.
+```
+
+### Interactive mode
+
+In interactive mode, you load a single world model and query it using the command line.
+
+```
+usage: main.py interactive [-h] -f FILE
+
+options:
+  -h, --help            show this help message and exit
+  -f FILE, --file FILE  Path to the dataset file.
+```
+
+### Generate mode
+
+Generate mode can be used to create new test datasets.
+
+```
+usage: main.py generate [-h] -o OUTPUT [--n_body N_BODY] [--n_con N_CON] [--n_par N_PAR] [--seed SEED]
+
+options:
+  -h, --help            show this help message and exit
+  -o OUTPUT, --output OUTPUT
+                        Path to save the generated dataset.
+  --n_body N_BODY       Number of bodies to generate in the dataset.
+  --n_con N_CON         Number of average connections between to generate in the dataset.
+  --n_par N_PAR         Number of parameters to generate for each object in the dataset.
+  --seed SEED           Seed for the random number generator.
+```
+
 ## SimObject
 
 The core dataset used by this project is a collection of simulation objects, managed by the `SimObjects` class (see [sim_objects.py](src/sim_objects.py)). Each SimObject represents an entity or component within a simulation, such as a physical body, force element, constraint, connection, or joint.
@@ -102,68 +197,3 @@ exists A: (exists B: (exists C:(AreConnected(A,B) & AreConnected(B,C) & ~(B=C)))
 
 Try it out for yourself! Run: `uv run src/main.py query -f "examples/example_world.json" -o "out/query.json" -q "exists A: (exists B: (exists C:(AreConnected(A,B) & AreConnected(B,C) & ~(B=C))))"`
 
-## Usage
-
-run `uv run src/main.py -h` for help.
-
-```
-usage: main.py [-h] {query,interactive,generate} ...
-
-CLI for querying a SimObject dataset using PL1 logic.
-
-positional arguments:
-  {query,interactive,generate}
-    query               Query a dataset with a formula and save the results to disk.
-    interactive         Enter an interactive mode to query a dataset.
-    generate            Generate a random dataset and save it to disk.
-
-options:
-  -h, --help            show this help message and exit
-```
-
-### Query mode
-
-In query mode, you can either provide a single query or a batch of queries in an input file. The results are written to the output file as JSON.
-
-```
-usage: main.py query [-h] -f FILE -o OUTPUT (-q QUERY | -i INPUT)
-
-options:
-  -h, --help            show this help message and exit
-  -f FILE, --file FILE  Path to the dataset file.
-  -o OUTPUT, --output OUTPUT
-                        Path to save the results of the query, in JSON format.
-  -q QUERY, --query QUERY
-                        The PL1 to query the dataset with.
-  -i INPUT, --input INPUT
-                        Path to a file containing a PL1 query on each line.
-```
-
-### Interactive mode
-
-In interactive mode, you load a single world model and query it using the command line.
-
-```
-usage: main.py interactive [-h] -f FILE
-
-options:
-  -h, --help            show this help message and exit
-  -f FILE, --file FILE  Path to the dataset file.
-```
-
-### Generate mode
-
-Generate mode can be used to create new test datasets.
-
-```
-usage: main.py generate [-h] -o OUTPUT [--n_body N_BODY] [--n_con N_CON] [--n_par N_PAR] [--seed SEED]
-
-options:
-  -h, --help            show this help message and exit
-  -o OUTPUT, --output OUTPUT
-                        Path to save the generated dataset.
-  --n_body N_BODY       Number of bodies to generate in the dataset.
-  --n_con N_CON         Number of average connections between to generate in the dataset.
-  --n_par N_PAR         Number of parameters to generate for each object in the dataset.
-  --seed SEED           Seed for the random number generator.
-```
