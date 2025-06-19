@@ -85,4 +85,4 @@ venv/
 ENV/
 env/
 
-out/
+out/*.json
