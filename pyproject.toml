@@ -1,0 +1,16 @@
+[project]
+name = "predicate-query"
+version = "0.1.0"
+description = "A query system using the language of first-order predicate logic."
+authors = [
+  { name="Florian Kankowski", email="florian.kankowski@uni-bielefeld.de" },
+]
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "jsonpickle>=4.1.1",
+    "lark>=1.2.2",
+    "tqdm>=4.67.1",
+    "wuggy>=1.1.2",
+]

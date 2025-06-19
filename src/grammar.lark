@@ -1,0 +1,37 @@
+start: exists_formula
+
+?exists_formula: "exists" CNAME ":" formula -> exists_formula
+
+?formula: formula "->" formula  -> implication_formula
+        | formula "|" formula   -> or_formula
+        | formula "<->" formula -> equivalence_formula
+        | formula "&" formula   -> and_formula
+        | "~" formula           -> negation_formula
+        | exists_formula        -> exists_formula
+        | "forall" CNAME ":" formula -> forall_formula
+        | predicate
+        | "(" formula ")"
+
+
+?predicate: "Body" "(" CNAME ")"                                -> body_predicate
+            | "ForceElement" "(" CNAME ")"                      -> force_element_predicate
+            | "Constraint" "(" CNAME ")"                        -> constraint_predicate
+            | "Connection" "(" CNAME ")"                        -> connection_predicate
+            | "Joint" "(" CNAME ")"                             -> joint_predicate
+            | "IsType" "(" CNAME "," ESCAPED_STRING ")"         -> type_predicate
+            | "AreConnected" "(" CNAME "," CNAME ")"            -> connecting_predicate
+            | "ParamIs" "(" CNAME "," INT "," literal ")"       -> is_predicate
+            | "ParamLt" "(" CNAME "," INT "," literal ")"       -> lt_predicate
+            | "ParamGt" "(" CNAME "," INT "," literal ")"       -> gt_predicate
+            | CNAME "=" CNAME                                   -> equality_predicate
+
+?literal: SIGNED_NUMBER
+        | ESCAPED_STRING
+
+
+%import common.CNAME
+%import common.WS
+%import common.ESCAPED_STRING 
+%import common.INT
+%import common.SIGNED_NUMBER
+%ignore WS
