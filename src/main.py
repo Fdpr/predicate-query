@@ -78,8 +78,7 @@ def main():
                           help='Number of average connections between to generate in the dataset.')
     generate.add_argument("--n_par", type=int, default=10,
                           help='Number of parameters to generate for each object in the dataset.')
-    generate.add_argument("--seed", type=int, default=42,
-                          help='Seed for the random number generator.')
+    generate.add_argument("--seed", type=int, help='Seed for the random number generator.')
 
     args = parser.parse_args()
     if args.mode == 'query':

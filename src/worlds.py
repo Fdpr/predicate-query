@@ -33,8 +33,8 @@ def create_random_body(n_par: int, random_generator: random.Random) -> Body:
     return Body(obj_id=next(counter), parameters=parameters)
 
 
-def create_example_world(n_body: int = 10, n_con: int = 3, n_par: int = 10, seed: int = 42) -> list[SimObject]:
-    random_generator = random.Random(seed)
+def create_example_world(n_body: int = 10, n_con: int = 3, n_par: int = 10, seed: int | None = None) -> list[SimObject]:
+    random_generator = random.Random(seed) if seed is not None else random.Random()
     items: list[Body] = [create_random_body(n_par, random_generator)
                          for _ in range(n_body)]
     connections: list[SimObject] = []
@@ -49,13 +49,15 @@ def create_example_world(n_body: int = 10, n_con: int = 3, n_par: int = 10, seed
                 body, con, n_par, random_generator))
     return items + connections
 
+
 def save_as_json(world: list[SimObject], filename: str) -> None:
     """
     Save the world as a JSON string using jsonpickle.
     """
     with open(filename, "w+") as f:
         f.write(str(jsonpickle.encode(world, indent=2)))
-        
+
+
 def load_from_json(filename: str) -> list[SimObject]:
     """
     Load the world from a JSON file using jsonpickle.
