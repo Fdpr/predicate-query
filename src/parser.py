@@ -151,7 +151,7 @@ class Solver:
         
         evaluator = FormulaEvaluator(self.world)
         
-        for obj in tqdm(self.world, desc="Solving formula", unit="candidate"):
+        for obj in tqdm(self.world, desc="Solving formula", unit="candidates"):
             assignments = {primary_var: obj}
             evaluator.assignments = assignments
             if evaluator.visit(sub_formula_tree):
