@@ -4,10 +4,7 @@ This project demonstrates a querying system based on the language of first-order
 
 ## Installation
 
-This project uses `uv` for dependency management and installation. Follow the steps below to set up your environment:
-
-### 1. Install uv
-If you haven't already, install `uv` ([see docs on astral.sh](https://docs.astral.sh/uv/getting-started/installation/)). Then clone this repo:
+This project uses `uv` for dependency management and installation. If you haven't already, install `uv` ([see docs on astral.sh](https://docs.astral.sh/uv/getting-started/installation/)). Then clone this repo:
 
 ```bash
 git clone https://github.com/Fdpr/predicate-query.git
