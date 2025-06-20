@@ -7,29 +7,19 @@ This project demonstrates a querying system based on the language of first-order
 This project uses `uv` for dependency management and installation. Follow the steps below to set up your environment:
 
 ### 1. Install uv
-If you haven't already, install uv (requires Python 3.8+):
+If you haven't already, install `uv` ([see docs on astral.sh](https://docs.astral.sh/uv/getting-started/installation/)). Then clone this repo:
 
-```bash
-curl -Ls https://astral.sh/uv/install.sh | sh
-```
-
-Or, on macOS with Homebrew:
-
-```bash
-brew install astral-sh/tap/uv
-```
-
-### 2. Clone the Repository
 ```bash
 git clone https://github.com/Fdpr/predicate-query.git
 cd predicate-query
 ```
-### 4. Install Dependencies
-Install all dependencies as specified in the lockfile:
+
+Running any `uv` command from inside the project directory should then set up the environment. You can run
 
 ```bash
-uv pip install -r uv.lock
+uv sync
 ```
+to test if the install works.
 
 ## Usage
 
@@ -179,7 +169,7 @@ These are the basic tokens that a lexer would recognize. They are treated as ter
 - `<string>`: A sequence of characters enclosed in double quotes, e.g., "character".
 
 ## How to query
-The system is made to find objects that satisfy certain conditions in the dataset. This is why each query must start with an `exists <identifier>: ...`. The identifier given in this root quantification is the object to be searched. All objects that can appear in this quantification to satisfy the formula will be returned by the query. Apart from that, the inner formula can be any combination of connectives. 
+The system is made to find objects that satisfy certain conditions in the dataset. This is why each query must start with a modified existential quantification, written using `find <identifier>: ...`. The identifier given in this root quantification is the object to be searched. All objects that can appear in this quantification to satisfy the formula will be returned by the query. Apart from that, the inner formula can be any combination of connectives according to the grammar. A `find` statement must only appear as the root and not be placed anywhere in the inner formula.
 
 ### Examples
 Find all ForceElements:

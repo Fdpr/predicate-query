@@ -2,20 +2,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, InitVar
 from typing import Optional, Union
 from collections import deque
-from itertools import cycle
-import random
-
-from wuggy import WuggyGenerator
-g = WuggyGenerator()
-g.load("orthographic_english")
-names = g.generate_classic(["object", "force", "constraint", "connection", "joint"], ncandidates_per_sequence=5)
-random.seed(42)
-random.shuffle(names)
-names = cycle(names)
-types = g.generate_classic(["screw", "part", "spring", "grease", "gear"], ncandidates_per_sequence=5)
-random.seed(42)
-random.shuffle(types)
-types = cycle(types)
 
 @dataclass(kw_only=True)
 class SimObject(ABC):
@@ -23,8 +9,8 @@ class SimObject(ABC):
     Abstract base class for all simulation objects.
     """
     obj_id: str
-    name: str = field(default_factory=lambda: str(next(names, {"pseudoword": "Object"})["pseudoword"]))
-    object_type: str = field(default_factory=lambda: str(next(types, {"pseudoword": "Object"})["pseudoword"]))
+    name: str = field(default="SimObject")
+    object_type: str = field(default="generic")
     parameters: list[str | int | float] = field(default_factory=list)
     connections: list[str] = field(default_factory=list, init=False)
     connected_objects: InitVar[list[Union[str, "SimObject"]] | None] = None

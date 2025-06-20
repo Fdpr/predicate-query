@@ -1,13 +1,11 @@
-start: exists_formula
-
-?exists_formula: "exists" CNAME ":" formula -> exists_formula
+start: "find" CNAME ":" formula -> find_statement
 
 ?formula: formula "->" formula  -> implication_formula
         | formula "|" formula   -> or_formula
         | formula "<->" formula -> equivalence_formula
         | formula "&" formula   -> and_formula
         | "~" formula           -> negation_formula
-        | exists_formula        -> exists_formula
+        | "exists" CNAME ":" formula -> exists_formula
         | "forall" CNAME ":" formula -> forall_formula
         | predicate
         | "(" formula ")"
