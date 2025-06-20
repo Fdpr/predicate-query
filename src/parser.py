@@ -49,9 +49,7 @@ class FormulaEvaluator(Interpreter):
     def negation_formula(self, inner): return not self.visit(inner)
     
     # --- Quantifiers ---
-    def exists_formula(self, t):
-        var_name = str(t.children[0])
-        sub_formula = t.children[1]
+    def exists_formula(self, var_name, sub_formula):
         # If the variable is already bound, we only check the sub-formula
         if var_name in self.assignments: return self.visit(sub_formula)
         # We keep track of the previous state of assignments for resetting the scope later
@@ -68,9 +66,7 @@ class FormulaEvaluator(Interpreter):
             else:
                 del self.assignments[var_name]
     
-    def forall_formula(self, t):
-        var_name = str(t.children[0])
-        sub_formula = t.children[1]
+    def forall_formula(self, var_name, sub_formula):
         # We keep track of the previous state of assignments for resetting the scope later
         old_value = self.assignments.get(var_name)
         try:
@@ -97,7 +93,7 @@ class FormulaEvaluator(Interpreter):
     def connecting_predicate(self, var1, var2):
         obj1 = self._get_obj(var1)
         obj2 = self._get_obj(var2)
-        return obj1.obj_id in obj2.connections or obj2.obj_id in obj1.connections
+        return (obj1.obj_id in obj2.connections) or (obj2.obj_id in obj1.connections)
 
     def is_predicate(self, var, param, val):
         obj = self._get_obj(var)
@@ -143,10 +139,8 @@ class Solver:
     def solve(self, formula: str) -> set[SimObject]:
         tree = self.parser.parse(formula)
         
-        entry_formula = tree.children[0]
-        assert isinstance(entry_formula, Tree), "The formula must be a tree structure."
-        primary_var = str(entry_formula.children[0])
-        sub_formula_tree = entry_formula.children[1]
+        primary_var = str(tree.children[0])
+        entry_formula = tree.children[1]
         solutions = set()
         
         evaluator = FormulaEvaluator(self.world)
@@ -154,7 +148,7 @@ class Solver:
         for obj in tqdm(self.world, desc="Solving formula", unit="candidates"):
             assignments = {primary_var: obj}
             evaluator.assignments = assignments
-            if evaluator.visit(sub_formula_tree):
+            if evaluator.visit(entry_formula):
                 solutions.add(obj.obj_id)
         return solutions
         

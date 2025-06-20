@@ -1,3 +1,3 @@
-exists A: ForceElement(A)
-exists A: (Body(A) & ParamGt(A, 1, 2))
-exists A: (exists B: (exists C:(AreConnected(A,B) & AreConnected(B,C) & ~(B=C))))
+find A: ForceElement(A)
+find A: (Body(A) & ParamGt(A, 1, 2))
+find A: (exists B: (exists C:(AreConnected(A,B) & AreConnected(B,C) & ~(B=C))))

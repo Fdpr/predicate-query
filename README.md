@@ -179,7 +179,7 @@ These are the basic tokens that a lexer would recognize. They are treated as ter
 - `<string>`: A sequence of characters enclosed in double quotes, e.g., "character".
 
 ## How to query
-The system is made to find objects that satisfy certain conditions in the dataset. This is why each query must start with an `exists <identifier>: ...`. The identifier given in this root quantification is the object to be searched. All objects that can appear in this quantification to satisfy the formula will be returned by the query. Apart from that, the inner formula can be any combination of connectives. 
+The system is made to find objects that satisfy certain conditions in the dataset. This is why each query must start with a modified existential quantification, written using `find <identifier>: ...`. The identifier given in this root quantification is the object to be searched. All objects that can appear in this quantification to satisfy the formula will be returned by the query. Apart from that, the inner formula can be any combination of connectives according to the grammar. A `find` statement must only appear as the root and not be placed anywhere in the inner formula.
 
 ### Examples
 Find all ForceElements:
