@@ -1,12 +1,14 @@
 start: "find" CNAME ":" formula -> find_statement
 
-?formula: formula "->" formula  -> implication_formula
-        | formula "|" formula   -> or_formula
-        | formula "<->" formula -> equivalence_formula
-        | formula "&" formula   -> and_formula
-        | "~" formula           -> negation_formula
-        | "exists" CNAME ":" formula -> exists_formula
-        | "forall" CNAME ":" formula -> forall_formula
+_rep_sep{x, sep}: x (sep x)*
+
+?formula: _rep_sep{formula, "<->"}      -> equivalence_formula
+        | _rep_sep{formula, "->"}       -> implication_formula
+        | _rep_sep{formula, "|"}        -> or_formula
+        | _rep_sep{formula, "&"}        -> and_formula
+        | "~" formula                   -> negation_formula
+        | "exists" CNAME ":" formula    -> exists_formula
+        | "forall" CNAME ":" formula    -> forall_formula
         | predicate
         | "(" formula ")"
 

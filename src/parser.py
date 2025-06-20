@@ -42,10 +42,20 @@ class FormulaEvaluator(Interpreter):
         raise ValueError(f"Unexpected token type: {t.type}")
 
     # --- Logical Connectives ---
-    def or_formula(self, left, right): return self.visit(left) or self.visit(right)
-    def and_formula(self, left, right): return self.visit(left) and self.visit(right)
-    def implication_formula(self, left, right): return not self.visit(left) or self.visit(right)
-    def equivalence_formula(self, left, right): return self.visit(left) == self.visit(right)
+    def equivalence_formula(self, *forms): 
+        first_value = self.visit(forms[0])
+        return all(self.visit(x) == first_value for x in forms[1:])
+    def implication_formula(self, *forms):
+        forms = forms[::-1]
+        val = self.visit(forms[0])
+        for form in forms[1:]:
+            curr = self.visit(form)
+            if curr > val:
+                return False
+            val = curr
+        return True
+    def or_formula(self, *forms): return any(self.visit(form) for form in forms)
+    def and_formula(self, *forms): return all(self.visit(form) for form in forms)
     def negation_formula(self, inner): return not self.visit(inner)
     
     # --- Quantifiers ---
@@ -100,20 +110,21 @@ class FormulaEvaluator(Interpreter):
         actual = obj.get_param(self.parse_token(param)) # type: ignore
         if not actual:
             return False
+        val = self.parse_token(val)
         if isinstance(actual, (int, float)):
-            return actual == self.parse_token(val)
-        elif isinstance(actual, str):
-            return actual.lower() == self.parse_token(val).lower() # type: ignore
-        else:
-            raise TypeError(f"Unsupported type for parameter '{param}': {type(actual)}. Expected int, float, or str.")
+            return actual == val
+        elif isinstance(actual, str) and isinstance(val, str):
+            return actual.lower() == val.lower()
+        return False
 
     def lt_predicate(self, var, param, val):
         obj = self._get_obj(var)
         actual = obj.get_param(self.parse_token(param)) # type: ignore
         if not actual:
             return False
-        if isinstance(actual, (int, float)):
-            return actual < self.parse_token(val) # type: ignore
+        val = self.parse_token(val)
+        if isinstance(actual, (int, float)) and isinstance(val, (int, float)):
+            return actual < val
         return False
 
     def gt_predicate(self, var, param, val):
@@ -121,8 +132,9 @@ class FormulaEvaluator(Interpreter):
         actual = obj.get_param(self.parse_token(param)) # type: ignore
         if not actual:
             return False
-        if isinstance(actual, (int, float)):
-            return actual > self.parse_token(val) # type: ignore
+        val = self.parse_token(val)
+        if isinstance(actual, (int, float)) and isinstance(val, (int, float)):
+            return actual > val 
         return False
         
 class Solver:
@@ -133,7 +145,7 @@ class Solver:
     def __init__(self, world: list[SimObject], assignment_factory: Optional[Iterator[dict[str, SimObject]]] = None):
         self.world = world
         self.assignment_generator = assignment_factory 
-        self.parser = Lark.open("grammar.lark", parser="lalr", rel_to=os.path.realpath(__file__))
+        self.parser = Lark.open("grammar.lark", parser="earley", rel_to=os.path.realpath(__file__))
         # Not implemented yet, but could be used to generate assignments using a heuristic
 
     def solve(self, formula: str) -> set[SimObject]:
