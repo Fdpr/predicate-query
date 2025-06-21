@@ -21,6 +21,7 @@ class SimObject(ABC):
         if connected_objects and (not isinstance(connected_objects, list)):
             raise TypeError("Connected objects must be a list.")
         deque(map(lambda x: self.connect(x), connected_objects or list()))
+            
 
     def get_param(self, index: int) -> Optional[str | int | float]:
         """

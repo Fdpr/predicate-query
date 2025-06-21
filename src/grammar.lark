@@ -2,13 +2,15 @@ start: "find" CNAME ":" formula -> find_statement
 
 _rep_sep{x, sep}: x (sep x)*
 
-?formula: _rep_sep{formula, "<->"}      -> equivalence_formula
-        | _rep_sep{formula, "->"}       -> implication_formula
-        | _rep_sep{formula, "|"}        -> or_formula
-        | _rep_sep{formula, "&"}        -> and_formula
-        | "~" formula                   -> negation_formula
-        | "exists" CNAME ":" formula    -> exists_formula
-        | "forall" CNAME ":" formula    -> forall_formula
+?formula: _rep_sep{formula, "<->"}                              -> equivalence_formula
+        | _rep_sep{formula, "->"}                               -> implication_formula
+        | _rep_sep{formula, "|"}                                -> or_formula
+        | _rep_sep{formula, "&"}                                -> and_formula
+        | "~" formula                                           -> negation_formula
+        | "exists" CNAME ":" formula                            -> exists_formula
+        | "forall" CNAME ":" formula                            -> forall_formula
+        | "connects" CNAME "->" CNAME ":" formula               -> connects_formula
+        | "atleast" "(" INT ")" "{" _rep_sep{formula, ","} "}"  -> atleast_formula
         | predicate
         | "(" formula ")"
 
@@ -30,8 +32,8 @@ _rep_sep{x, sep}: x (sep x)*
 
 
 %import common.CNAME
-%import common.WS
 %import common.ESCAPED_STRING 
 %import common.INT
 %import common.SIGNED_NUMBER
+%import common.WS
 %ignore WS
