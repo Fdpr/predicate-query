@@ -11,7 +11,7 @@ class FormulaEvaluator(Interpreter):
     Implements the logic to check if a given assignment satisfies a formula for a given world.
     """
 
-    def __init__(self, world: list[SimObject], assignments: Optional[dict[str, SimObject]] = None):
+    def __init__(self, world: list[SimObject], assignments: Optional[dict[str, list[SimObject | bool | None]]] = None):
         """
         Initializes the transformer with a world and optional assignments.
         :param world: The list of SimObjects to consider for this formula.
@@ -21,12 +21,17 @@ class FormulaEvaluator(Interpreter):
             and not against all objects in the world!
         """
         self.world = world
-        self.assignments = assignments if assignments is not None else {}
+        self.assignments: dict[str, list[SimObject | bool | None]] = assignments if assignments is not None else {}
 
     def _get_obj(self, var_name):
         if var_name not in self.assignments:
             raise NameError(f"Variable '{var_name}' is not bound.")
-        return self.assignments[var_name]
+        assigned_obj = self.assignments[var_name]
+        if assigned_obj[1]:
+            assert isinstance(assigned_obj[0], SimObject), f"Expected a SimObject, got {type(assigned_obj[0])} for variable '{var_name}'"
+            return assigned_obj[0]
+        raise NameError(f"Variable '{var_name}' is not bound.")
+        
 
     # --- Literal and Variable Handling ---
     def ESCAPED_STRING(self, s): return s.value[1:-1]  # Remove quotes
@@ -62,34 +67,55 @@ class FormulaEvaluator(Interpreter):
     def exists_formula(self, var_name, sub_formula):
         # If the variable is already bound, we only check the sub-formula
         if var_name in self.assignments: return self.visit(sub_formula)
+        var_name = str(var_name)  # Ensure var_name is a string
         # We keep track of the previous state of assignments for resetting the scope later
         old_value = self.assignments.get(var_name)
         try:
+            self.assignments[var_name] = [None, True]  # Mark as bound but not assigned
             for obj in self.world:
-                self.assignments[var_name] = obj
+                self.assignments[var_name][0] = obj
                 if self.visit(sub_formula):
                     return True
             return False
         finally:
+            self.assignments[var_name][1] = False  # Mark as unbound
             if old_value:
                 self.assignments[var_name] = old_value
-            else:
-                del self.assignments[var_name]
     
     def forall_formula(self, var_name, sub_formula):
         # We keep track of the previous state of assignments for resetting the scope later
         old_value = self.assignments.get(var_name)
+        var_name = str(var_name)  # Ensure var_name is a string
         try:
+            self.assignments[var_name] = [None, True]  # Mark as bound but not assigned
             for obj in self.world:
-                self.assignments[var_name] = obj
+                self.assignments[var_name][0] = obj
                 if not self.visit(sub_formula):
                     return False
             return True
         finally:
+            self.assignments[var_name][1] = False  # Mark as unbound
             if old_value:
                 self.assignments[var_name] = old_value
-            else:
-                del self.assignments[var_name]
+                
+    def connects_formula(self, from_var, to_var, sub_formula):
+        from_var = str(from_var)
+        to_var = str(to_var)
+        if not self._get_obj(from_var):
+            raise NameError(f"Variable '{from_var}' is not bound.")
+        connections = self.assignments[from_var][0].connections #type: ignore
+        old_var = self.assignments.get(to_var)
+        try:
+            self.assignments[to_var] = [None, True]  
+            for obj in connections:
+                self.assignments[to_var][0] = next(o for o in self.world if o.obj_id == obj)
+                if self.visit(sub_formula):
+                    return True
+            return False
+        finally:
+            self.assignments[to_var][1] = False
+            if old_var:
+                self.assignments[to_var] = old_var
 
     # --- Predicates ---
     def body_predicate(self, var): return self._get_obj(var).get_object_class() == "Body"
@@ -108,7 +134,7 @@ class FormulaEvaluator(Interpreter):
     def is_predicate(self, var, param, val):
         obj = self._get_obj(var)
         actual = obj.get_param(self.parse_token(param)) # type: ignore
-        if not actual:
+        if actual is None:
             return False
         val = self.parse_token(val)
         if isinstance(actual, (int, float)):
@@ -120,7 +146,7 @@ class FormulaEvaluator(Interpreter):
     def lt_predicate(self, var, param, val):
         obj = self._get_obj(var)
         actual = obj.get_param(self.parse_token(param)) # type: ignore
-        if not actual:
+        if actual is None:
             return False
         val = self.parse_token(val)
         if isinstance(actual, (int, float)) and isinstance(val, (int, float)):
@@ -130,7 +156,7 @@ class FormulaEvaluator(Interpreter):
     def gt_predicate(self, var, param, val):
         obj = self._get_obj(var)
         actual = obj.get_param(self.parse_token(param)) # type: ignore
-        if not actual:
+        if actual is None:
             return False
         val = self.parse_token(val)
         if isinstance(actual, (int, float)) and isinstance(val, (int, float)):
@@ -145,8 +171,8 @@ class Solver:
     def __init__(self, world: list[SimObject], assignment_factory: Optional[Iterator[dict[str, SimObject]]] = None):
         self.world = world
         self.assignment_generator = assignment_factory 
-        self.parser = Lark.open("grammar.lark", parser="earley", rel_to=os.path.realpath(__file__))
         # Not implemented yet, but could be used to generate assignments using a heuristic
+        self.parser = Lark.open("grammar.lark", parser="earley", rel_to=os.path.realpath(__file__))
 
     def solve(self, formula: str) -> set[SimObject]:
         tree = self.parser.parse(formula)
@@ -158,9 +184,9 @@ class Solver:
         evaluator = FormulaEvaluator(self.world)
         
         for obj in tqdm(self.world, desc="Solving formula", unit="candidates"):
-            assignments = {primary_var: obj}
+            assignments = {primary_var: [obj, True]}
             evaluator.assignments = assignments
             if evaluator.visit(entry_formula):
-                solutions.add(obj.obj_id)
+                solutions.add(str(list(map(lambda x: (x, evaluator.assignments[x][0].obj_id), evaluator.assignments))))
         return solutions
         
