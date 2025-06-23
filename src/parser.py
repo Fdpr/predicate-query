@@ -1,8 +1,10 @@
 from typing import Iterator, Optional
-from lark import Lark, Tree, v_args
+from lark import Lark, v_args
 from lark.visitors import Interpreter
 from sim_objects import SimObject
 from tqdm import tqdm
+from itertools import dropwhile, groupby, islice
+from operator import not_
 import os
 
 @v_args(inline=True)
@@ -47,20 +49,10 @@ class FormulaEvaluator(Interpreter):
         raise ValueError(f"Unexpected token type: {t.type}")
 
     # --- Logical Connectives ---
-    def equivalence_formula(self, *forms): 
-        first_value = self.visit(forms[0])
-        return all(self.visit(x) == first_value for x in forms[1:])
-    def implication_formula(self, *forms):
-        forms = forms[::-1]
-        val = self.visit(forms[0])
-        for form in forms[1:]:
-            curr = self.visit(form)
-            if curr > val:
-                return False
-            val = curr
-        return True
-    def or_formula(self, *forms): return any(self.visit(form) for form in forms)
-    def and_formula(self, *forms): return all(self.visit(form) for form in forms)
+    def equivalence_formula(self, *forms): return len(list(islice(groupby(map(self.visit, forms)), 2))) <= 1
+    def implication_formula(self, *forms): return all(dropwhile(not_, map(self.visit, forms)))
+    def or_formula(self, *forms): return any(map(self.visit, forms))
+    def and_formula(self, *forms): return all(map(self.visit, forms))
     def negation_formula(self, inner): return not self.visit(inner)
     
     # --- Quantifiers ---
